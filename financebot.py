@@ -16,7 +16,7 @@ if not server_chan_keys_env:
     raise ValueError("环境变量 SERVER_CHAN_KEYS 未设置，请在Github Actions中设置此变量！")
 server_chan_keys = server_chan_keys_env.split(",")
 
-openai_client = OpenAI(api_key=openai_api_key, base_url="https://api.deepseek.com/v1")
+openai_client = OpenAI(api_key=openai_api_key, base_url="https://api.deepseek.com/")
 
 # RSS源地址列表
 rss_feeds = {
@@ -126,7 +126,7 @@ def fetch_rss_articles(rss_feeds, max_articles=10):
 # AI 生成内容摘要（基于爬取的正文）
 def summarize(text):
     completion = openai_client.chat.completions.create(
-        model="deepseek-chat",
+        model="deepseek-v4-pro",  # 使用 DeepSeek V4 Pro 模型
         messages=[
             {"role": "system", "content": """
              你是一名专业的财经新闻分析师，请根据以下新闻内容，按照以下步骤完成任务：
@@ -138,7 +138,9 @@ def summarize(text):
              3. 将以上分析整合为一篇1500字以内的财经热点摘要，逻辑清晰、重点突出，适合专业投资者阅读。
              """},
             {"role": "user", "content": text}
-        ]
+        ],
+        reasoning_effort="high",
+        extra_body={"thinking": {"type": "enabled"}}
     )
     return completion.choices[0].message.content.strip()
 
